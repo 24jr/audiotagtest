@@ -1,4 +1,3 @@
-import { error, json } from "@sveltejs/kit"
 import NodeID3 from "node-id3"
 
 export async function POST(event) {
@@ -17,7 +16,7 @@ export async function POST(event) {
   console.log("updatedAudioBuffer", updatedAudioBuffer)
   // const updatedTags = NodeID3.read(updatedAudioBuffer)
   // console.log("updatedTags:", updatedTags)
-  console.log(NodeID3.read(updatedAudioBuffer))
+  console.log("readtags: ", NodeID3.read(updatedAudioBuffer))
   if (updatedAudioBuffer) {
     return new Response(updatedAudioBuffer, {
       status: 200,

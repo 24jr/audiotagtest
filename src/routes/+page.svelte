@@ -1,31 +1,43 @@
 <script>
-  import { Button } from "sveltekit-ui"
-
   let file
   let newAudioSrc
   const tags = {
     title: "Test Title",
     artist: "Test Artist",
     album: "Test Album",
-    // image: {
-    //   mime: "image/jpeg",
-    //   type: {
-    //     id: 3, // Front cover, see https://en.wikipedia.org/wiki/ID3#ID3v2_embedded_image_extension
-    //   },
-    //   description: "image description",
-    //   imageBuffer: null,
-    // },
+    image: {
+      mime: "image/jpeg",
+      type: {
+        id: 3, // Front cover
+      },
+      description: "image description",
+      imageBuffer: null,
+    },
+  }
+
+  const public_audio_url =
+    "https://firmcmccxfdethzdexal.supabase.co/storage/v1/object/public/site/test/helloworld.mp3"
+  async function setAudioTagsToUrl() {
+    const file = await urlToFile(public_audio_url, "puburltest.mp3")
+    setAudioTags(file, tags)
+  }
+
+  async function urlToFile(url, filename) {
+    const response = await fetch(url)
+    const data = await response.blob()
+    return new File([data], filename, { type: data.type })
   }
 
   async function setAudioTags(file, tags) {
     try {
       const formData = new FormData()
       formData.append("file", file)
-      // const responseImage = await fetch(
-      //   "https://firmcmccxfdethzdexal.supabase.co/storage/v1/object/public/site/test/moonsm.jpeg"
-      // )
-      // const imageArrayBuffer = await responseImage.arrayBuffer()
-      // tags.image.imageBuffer = new Uint8Array(imageArrayBuffer)
+      // add image cover
+      const responseImage = await fetch(
+        "https://firmcmccxfdethzdexal.supabase.co/storage/v1/object/public/site/test/moonsm.jpeg"
+      )
+      const imageArrayBuffer = await responseImage.arrayBuffer()
+      tags.image.imageBuffer = new Uint8Array(imageArrayBuffer)
       console.log("pretags", tags)
       formData.append("tags", JSON.stringify(tags))
       const response = await fetch("/api/v1/audio", {
@@ -52,25 +64,30 @@
   }
 </script>
 
-<input
-  type="file"
-  accept="audio/*"
-  on:change={(event) => (file = event.target.files[0])}
-/>
-<br />
-<br />
-<button on:click={() => setAudioTags(file, tags)}>set tags</button>
-<p>og audio</p>
-{#if file}
-  <audio controls preload="metadata">
-    <source src={URL.createObjectURL(file)} type="audio/mpeg" />
-  </audio>
-{/if}
+<div style="margin: 1rem;">
+  <input
+    type="file"
+    accept="audio/*"
+    on:change={(event) => (file = event.target.files[0])}
+  />
+  <br />
+  <br />
+  <button on:click={() => setAudioTags(file, tags)}
+    >set tags to input file</button
+  >
+  <button on:click={() => setAudioTagsToUrl()}>set tags to public url</button>
+  <p>og audio</p>
+  {#if file}
+    <audio controls preload="metadata">
+      <source src={URL.createObjectURL(file)} type="audio/mpeg" />
+    </audio>
+  {/if}
 
-<p>new audio</p>
-{#if newAudioSrc}
-  <audio controls preload="metadata">
-    <source src={newAudioSrc} type="audio/mpeg" />
-  </audio>
-{/if}
-<button on:click={() => downloadAudio()}>download new audio</button>
+  <p>new audio</p>
+  {#if newAudioSrc}
+    <audio controls preload="metadata">
+      <source src={newAudioSrc} type="audio/mpeg" />
+    </audio>
+  {/if}
+  <button on:click={() => downloadAudio()}>download new audio</button>
+</div>
